@@ -1,0 +1,389 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Mono:wght@500&family=Fira+Sans:wght@500;700&display=swap");
+
+:root {
+  --black: #000000;
+  --text: #171717;
+  --white: #ffffff;
+  --panel-border: 4px solid var(--black);
+  --input-border: 1px solid var(--black);
+  --radius: 8px;
+  --tab-radius: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--white);
+  color: var(--black);
+  font-family: "Fira Sans", sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 98px 24px 120px;
+}
+
+.calculator {
+  width: 532px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.tabs {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.tab {
+  border: 2px solid var(--black);
+  background: var(--white);
+  padding: 12px 24px 12px 12px;
+  font-family: "Fira Sans", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: default;
+}
+
+.tab + .tab {
+  margin-left: -2px;
+}
+
+.tab--active {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
+.panel {
+  width: 100%;
+  border: var(--panel-border);
+  background: var(--white);
+}
+
+.panel--main {
+  padding: 64px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intro__title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--text);
+}
+
+.intro__text {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--black);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.option-label {
+  font-family: "Fira Mono", monospace;
+  font-size: 16px;
+  line-height: 1.25;
+  padding-bottom: 22px;
+}
+
+.option-label--sans {
+  font-family: "Fira Sans", sans-serif;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.option-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 240px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.input-field {
+  border: var(--input-border);
+  border-radius: var(--radius);
+  height: 52px;
+  background: var(--white);
+}
+
+.input-inner {
+  height: 100%;
+  padding: 0 15px 22px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: "Fira Mono", monospace;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.input-inner input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  width: 84px;
+  padding: 0;
+  margin: 0;
+}
+
+.input-inner input::-webkit-outer-spin-button,
+.input-inner input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-inner input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input-unit {
+  white-space: nowrap;
+}
+
+.input-suffix {
+  margin-left: auto;
+  font-family: "Fira Mono", monospace;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.range {
+  width: 100%;
+  height: 8px;
+  margin-top: -8px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 8px;
+  background: var(--black);
+  border-radius: 10px;
+  border: 1px solid var(--white);
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--black);
+  margin-top: -4px;
+}
+
+.range::-moz-range-track {
+  height: 8px;
+  background: var(--black);
+  border-radius: 10px;
+  border: 1px solid var(--white);
+}
+
+.range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--black);
+  border: none;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Fira Sans", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.05;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--black);
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  color: var(--black);
+}
+
+.checkbox-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0;
+}
+
+.checkbox input:checked + .checkbox-box {
+  background: var(--black);
+}
+
+.checkbox input:checked + .checkbox-box .checkbox-icon {
+  color: var(--white);
+  opacity: 1;
+}
+
+.checkbox-price {
+  margin-left: 4px;
+}
+
+.panel--summary {
+  padding: 36px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-style: normal;
+  color: var(--black);
+}
+
+.summary-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+  align-items: flex-end;
+}
+
+.summary-line {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.summary-total {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  font-family: "Fira Sans", sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.05;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.btn {
+  height: 52px;
+  border-radius: 8px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Fira Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.btn--secondary {
+  background: var(--white);
+  border: 1px solid var(--black);
+  color: var(--black);
+}
+
+.btn--primary {
+  background: var(--black);
+  border: none;
+  color: var(--white);
+}
+
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+}
+
+.btn-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 48px 16px 80px;
+  }
+
+  .calculator {
+    width: 100%;
+  }
+
+  .panel--main,
+  .panel--summary {
+    padding: 32px 24px;
+  }
+
+  .option-row {
+    flex-direction: column;
+  }
+
+  .option-inputs {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    justify-content: center;
+  }
+}
