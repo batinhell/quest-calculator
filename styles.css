@@ -515,7 +515,7 @@ body {
 
 @media (max-width: 640px) {
   body {
-    padding: 39px 0 0;
+    padding: 20px 0 0;
   }
 
   .calculator {
@@ -536,8 +536,8 @@ body {
   }
 
   .tab {
-    height: 48px;
-    padding: 0 24px 0 12px;
+    height: 44px;
+    padding: 0 20px 0 10px;
     border-width: 2px;
   }
 
@@ -546,26 +546,26 @@ body {
   }
 
   .tab__label {
-    padding: 12px 0;
+    padding: 10px 0;
   }
 
   .panel--main,
   .panel--summary {
-    padding: 32px 0;
+    padding: 20px 0;
     border: none;
   }
 
   .panel--main {
     border-top: 4px solid var(--black);
-    gap: 24px;
+    gap: 14px;
   }
 
   .panel--summary {
-    padding: 24px 0;
+    padding: 14px 0;
     border-top: 2px solid var(--black);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
 
   .panel--summary::before {
@@ -592,7 +592,7 @@ body {
   }
 
   .intro__title {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .intro__text {
@@ -601,7 +601,7 @@ body {
 
   .option-row {
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
 
   .option-label {
@@ -612,7 +612,7 @@ body {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 8px;
   }
 
   .option-inputs--single {
@@ -632,8 +632,8 @@ body {
 
   .summary-total {
     justify-content: flex-start;
-    font-size: 24px;
-    gap: 8px;
+    font-size: 22px;
+    gap: 6px;
     width: auto;
     align-items: center;
   }
@@ -650,6 +650,16 @@ body {
     background: transparent;
     color: var(--black);
     justify-content: center;
+  }
+
+  .btn--primary:hover,
+  .btn--primary:active,
+  .btn--secondary:hover,
+  .btn--secondary:active,
+  .btn:focus-visible {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
   }
 
   .btn-text {

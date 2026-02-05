@@ -21,7 +21,7 @@ const roundToRubles = (value) => Math.round(value);
 
 const normalizeCount = (value) => Math.round(value);
 
-const normalizeMoney = (value) => roundTo(value, 2);
+const normalizeMoney = (value) => roundToRubles(value);
 
 const NORMAL_DEADLINE_DAYS = 14;
 const MIN_DEADLINE_DAYS = 3;
@@ -85,9 +85,9 @@ const projectTypes = {
 
 const fields = {
   slidesCount: { min: 0, max: 200, step: 1, normalize: normalizeCount },
-  slidesPrice: { min: 1500, max: 2500, step: 0.01, normalize: normalizeMoney },
+  slidesPrice: { min: 1500, max: 2500, step: 1, normalize: normalizeMoney },
   rendersCount: { min: 0, max: 50, step: 1, normalize: normalizeCount },
-  rendersPrice: { min: 750, max: 1500, step: 0.01, normalize: normalizeMoney },
+  rendersPrice: { min: 750, max: 1500, step: 1, normalize: normalizeMoney },
   deadlineDays: { min: 3, max: 30, step: 1, normalize: normalizeCount },
 };
 
