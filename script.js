@@ -12,31 +12,93 @@ const formatPercent = (value) => {
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-const urgencyPercentByDays = (days) => {
-  if (days <= 0) return 0;
-  if (days <= 1) return 50;
-  if (days <= 2) return 40;
-  if (days <= 3) return 30;
-  if (days <= 5) return 20;
-  if (days <= 7) return 10;
-  return 0;
+const roundTo = (value, precision = 2) => {
+  const factor = 10 ** precision;
+  return Math.round((value + Number.EPSILON) * factor) / factor;
+};
+
+const roundToRubles = (value) => Math.round(value);
+
+const normalizeCount = (value) => Math.round(value);
+
+const normalizeMoney = (value) => roundTo(value, 2);
+
+const NORMAL_DEADLINE_DAYS = 14;
+const MIN_DEADLINE_DAYS = 3;
+const MAX_RUSH_COEFFICIENT = 0.15;
+
+const rushCoefByDays = (days) => {
+  if (days >= NORMAL_DEADLINE_DAYS) return 0;
+  const normalizedDays = Math.max(days, MIN_DEADLINE_DAYS);
+  const ratio = (NORMAL_DEADLINE_DAYS - normalizedDays) / (NORMAL_DEADLINE_DAYS - MIN_DEADLINE_DAYS);
+  return MAX_RUSH_COEFFICIENT * ratio * ratio;
+};
+
+const linearPriceFromCount = (count, config) => {
+  if (count <= config.thresholdMin) return config.maxPrice;
+  if (count >= config.thresholdMax) return config.minPrice;
+  const span = config.thresholdMax - config.thresholdMin;
+  const priceDrop = config.maxPrice - config.minPrice;
+  return config.maxPrice - ((count - config.thresholdMin) * priceDrop) / span;
+};
+
+const countFromLinearPrice = (price, config) => {
+  if (price >= config.maxPrice) return config.thresholdMin;
+  if (price <= config.minPrice) return config.thresholdMax;
+  const span = config.thresholdMax - config.thresholdMin;
+  const priceDrop = config.maxPrice - config.minPrice;
+  return config.thresholdMin + ((config.maxPrice - price) * span) / priceDrop;
+};
+
+const projectTypes = {
+  event: {
+    slides: {
+      maxPrice: 2500,
+      minPrice: 1500,
+      thresholdMin: 30,
+      thresholdMax: 200,
+    },
+    renders: {
+      maxPrice: 1500,
+      minPrice: 750,
+      thresholdMin: 10,
+      thresholdMax: 30,
+    },
+    keyvisualPrice: 30000,
+  },
+  quest: {
+    slides: {
+      maxPrice: 2000,
+      minPrice: 1000,
+      thresholdMin: 30,
+      thresholdMax: 200,
+    },
+    renders: {
+      maxPrice: 1000,
+      minPrice: 500,
+      thresholdMin: 10,
+      thresholdMax: 30,
+    },
+    keyvisualPrice: 20000,
+  },
 };
 
 const fields = {
-  slidesCount: { min: 0, max: 200, step: 1 },
-  slidesPrice: { min: 0, max: 20000, step: 100 },
-  rendersCount: { min: 0, max: 100, step: 1 },
-  rendersPrice: { min: 0, max: 20000, step: 100 },
-  deadlineDays: { min: 0, max: 30, step: 1 },
+  slidesCount: { min: 0, max: 200, step: 1, normalize: normalizeCount },
+  slidesPrice: { min: 1500, max: 2500, step: 0.01, normalize: normalizeMoney },
+  rendersCount: { min: 0, max: 50, step: 1, normalize: normalizeCount },
+  rendersPrice: { min: 750, max: 1500, step: 0.01, normalize: normalizeMoney },
+  deadlineDays: { min: 3, max: 30, step: 1, normalize: normalizeCount },
 };
 
 const state = {
-  slidesCount: 0,
-  slidesPrice: 0,
+  projectType: "event",
+  slidesCount: 20,
+  slidesPrice: 2500,
   rendersCount: 0,
-  rendersPrice: 0,
-  deadlineDays: 0,
-  keyvisual: true,
+  rendersPrice: 1500,
+  deadlineDays: 14,
+  keyvisual: false,
 };
 
 const dom = {
@@ -51,6 +113,7 @@ const dom = {
   deadlineDays: document.getElementById("deadlineDays"),
   deadlineDaysRange: document.getElementById("deadlineDaysRange"),
   keyvisual: document.getElementById("keyvisual"),
+  keyvisualPrice: document.getElementById("keyvisualPrice"),
   deadlinePercent: document.getElementById("deadlinePercent"),
   summarySlides: document.getElementById("summarySlides"),
   summaryRenders: document.getElementById("summaryRenders"),
@@ -61,39 +124,120 @@ const dom = {
   copy: document.getElementById("copy"),
 };
 
-const copyButtonMarkup = dom.copy.innerHTML;
+const autosizeInputs = Array.from(document.querySelectorAll(".input-number"));
 
-const syncField = (key, value) => {
+const updateInputSize = (input) => {
+  if (!input) return;
+  const raw = input.value === "" ? "0" : String(input.value);
+  const width = Math.max(1, raw.length);
+  input.style.width = `${width}ch`;
+};
+
+const tabs = Array.from(document.querySelectorAll(".tab"));
+
+const getActiveType = () => projectTypes[state.projectType];
+
+const setInputBounds = (key, { min, max, step }) => {
+  const targets = [dom[key], dom[`${key}Range`]].filter(Boolean);
+  targets.forEach((input) => {
+    input.min = String(min);
+    input.max = String(max);
+    if (step !== undefined) {
+      input.step = String(step);
+    }
+  });
+};
+
+const updateField = (key, value) => {
   const config = fields[key];
-  const next = clamp(value, config.min, config.max);
-  state[key] = next;
-  dom[key].value = next;
+  const normalized = config.normalize ? config.normalize(value) : value;
+  const clamped = clamp(normalized, config.min, config.max);
+  state[key] = clamped;
+  dom[key].value = clamped;
+  updateInputSize(dom[key]);
   const rangeKey = `${key}Range`;
   if (dom[rangeKey]) {
-    dom[rangeKey].value = next;
+    dom[rangeKey].value = clamped;
   }
 };
 
-const recalc = () => {
-  const slidesCost = state.slidesCount * state.slidesPrice;
-  const rendersCost = state.rendersCount * state.rendersPrice;
-  const urgencyPercent = urgencyPercentByDays(state.deadlineDays);
-  const urgencyCost = Math.round((slidesCost + rendersCost) * (urgencyPercent / 100));
-  const keyvisualCost = state.keyvisual ? 30000 : 0;
-  const total = slidesCost + rendersCost + urgencyCost + keyvisualCost;
-
-  dom.deadlinePercent.textContent = formatPercent(urgencyPercent);
-  dom.summarySlides.textContent = formatCurrency(slidesCost);
-  dom.summaryRenders.textContent = formatCurrency(rendersCost);
-  dom.summaryUrgency.textContent = formatCurrency(urgencyCost);
-  dom.summaryKeyvisual.textContent = formatCurrency(keyvisualCost);
-  dom.summaryTotal.textContent = formatCurrency(total);
+const setActiveTab = (nextTab) => {
+  tabs.forEach((tab) => {
+    const isActive = tab === nextTab;
+    tab.classList.toggle("tab--active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
 };
 
-const bindInput = (key) => {
+const initialTab = tabs.find((tab) => tab.classList.contains("tab--active")) || tabs[0];
+
+const updateSlidesFromCount = (value) => {
+  updateField("slidesCount", value);
+  const price = linearPriceFromCount(state.slidesCount, getActiveType().slides);
+  updateField("slidesPrice", price);
+};
+
+const updateSlidesFromPrice = (value) => {
+  updateField("slidesPrice", value);
+  const count = countFromLinearPrice(state.slidesPrice, getActiveType().slides);
+  updateField("slidesCount", count);
+};
+
+const updateRendersFromCount = (value) => {
+  updateField("rendersCount", value);
+  const price = linearPriceFromCount(state.rendersCount, getActiveType().renders);
+  updateField("rendersPrice", price);
+};
+
+const updateRendersFromPrice = (value) => {
+  updateField("rendersPrice", value);
+  const count = countFromLinearPrice(state.rendersPrice, getActiveType().renders);
+  updateField("rendersCount", count);
+};
+
+const updateTypeDependentBounds = () => {
+  const config = getActiveType();
+  fields.slidesPrice.min = config.slides.minPrice;
+  fields.slidesPrice.max = config.slides.maxPrice;
+  fields.rendersPrice.min = config.renders.minPrice;
+  fields.rendersPrice.max = config.renders.maxPrice;
+  setInputBounds("slidesPrice", fields.slidesPrice);
+  setInputBounds("rendersPrice", fields.rendersPrice);
+  dom.keyvisualPrice.textContent = `+${formatCurrency(config.keyvisualPrice)}`;
+};
+
+const recalc = () => {
+  const slidesCost = roundTo(state.slidesCount * state.slidesPrice, 2);
+  const rendersCost = roundTo(state.rendersCount * state.rendersPrice, 2);
+  const keyvisualCost = state.keyvisual ? getActiveType().keyvisualPrice : 0;
+  const baseCost = roundTo(slidesCost + rendersCost + keyvisualCost, 2);
+  const rushCoef = rushCoefByDays(state.deadlineDays);
+  const rushAddon = roundTo(baseCost * rushCoef, 2);
+  const total = roundTo(baseCost + rushAddon, 2);
+
+  dom.deadlinePercent.textContent = formatPercent(rushCoef * 100);
+  dom.summarySlides.textContent = formatCurrency(roundToRubles(slidesCost));
+  dom.summaryRenders.textContent = formatCurrency(roundToRubles(rendersCost));
+  dom.summaryUrgency.textContent = formatCurrency(roundToRubles(rushAddon));
+  dom.summaryKeyvisual.textContent = formatCurrency(roundToRubles(keyvisualCost));
+  dom.summaryTotal.textContent = formatCurrency(roundToRubles(total));
+
+  const toggleLine = (node, value) => {
+    const line = node.closest(".summary-line");
+    if (!line) return;
+    line.style.display = value > 0 ? "" : "none";
+  };
+
+  toggleLine(dom.summarySlides, roundToRubles(slidesCost));
+  toggleLine(dom.summaryRenders, roundToRubles(rendersCost));
+  toggleLine(dom.summaryUrgency, roundToRubles(rushAddon));
+  toggleLine(dom.summaryKeyvisual, roundToRubles(keyvisualCost));
+};
+
+const bindInput = (key, handler) => {
   dom[key].addEventListener("input", (event) => {
     const value = Number(event.target.value || 0);
-    syncField(key, value);
+    handler(value);
     recalc();
   });
 
@@ -101,48 +245,96 @@ const bindInput = (key) => {
   if (dom[rangeKey]) {
     dom[rangeKey].addEventListener("input", (event) => {
       const value = Number(event.target.value || 0);
-      syncField(key, value);
+      handler(value);
       recalc();
     });
   }
 };
 
-Object.keys(fields).forEach(bindInput);
+autosizeInputs.forEach(updateInputSize);
 
 dom.keyvisual.addEventListener("change", (event) => {
   state.keyvisual = event.target.checked;
   recalc();
 });
 
-dom.reset.addEventListener("click", () => {
-  syncField("slidesCount", 0);
-  syncField("slidesPrice", 0);
-  syncField("rendersCount", 0);
-  syncField("rendersPrice", 0);
-  syncField("deadlineDays", 0);
-  state.keyvisual = true;
-  dom.keyvisual.checked = true;
+const resetCalculator = () => {
+  updateSlidesFromCount(20);
+  updateRendersFromCount(0);
+  updateField("deadlineDays", 14);
+  state.keyvisual = false;
+  dom.keyvisual.checked = false;
   recalc();
+};
+
+document.querySelectorAll(".btn--secondary").forEach((btn) => {
+  btn.addEventListener("click", resetCalculator);
 });
 
-dom.copy.addEventListener("click", async () => {
-  const payload = [
-    `Вёрстка слайдов: ${dom.summarySlides.textContent}`,
-    `Отрисовка: ${dom.summaryRenders.textContent}`,
-    `Надбавка за срочность: ${dom.summaryUrgency.textContent}`,
-    `Кейвижуал: ${dom.summaryKeyvisual.textContent}`,
-    `Всего: ${dom.summaryTotal.textContent}`,
-  ].join("\n");
+const getSummaryPayload = () => {
+  const summaryItems = [
+    { label: "Вёрстка слайдов", value: dom.summarySlides.textContent, node: dom.summarySlides },
+    { label: "Отрисовка", value: dom.summaryRenders.textContent, node: dom.summaryRenders },
+    { label: "Надбавка за срочность", value: dom.summaryUrgency.textContent, node: dom.summaryUrgency },
+    { label: "Кейвижуал", value: dom.summaryKeyvisual.textContent, node: dom.summaryKeyvisual },
+  ];
 
-  try {
-    await navigator.clipboard.writeText(payload);
-    dom.copy.textContent = "Скопировано";
-    setTimeout(() => {
-      dom.copy.innerHTML = copyButtonMarkup;
-    }, 1200);
-  } catch (error) {
-    console.error("Clipboard error", error);
-  }
+  const payloadLines = summaryItems
+    .filter((item) => {
+      const line = item.node.closest(".summary-line");
+      return !line || line.style.display !== "none";
+    })
+    .map((item) => `${item.label}: ${item.value}`);
+
+  payloadLines.push(`Всего: ${dom.summaryTotal.textContent}`);
+  return payloadLines.join("\n");
+};
+
+document.querySelectorAll(".btn--primary").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(getSummaryPayload());
+      const textNode = btn.querySelector(".btn-text");
+      if (textNode) {
+        const originalText = textNode.textContent;
+        textNode.textContent = "Скопировано";
+        setTimeout(() => {
+          textNode.textContent = originalText;
+        }, 1200);
+      }
+    } catch (error) {
+      console.error("Clipboard error", error);
+    }
+  });
 });
 
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    setActiveTab(tab);
+    const nextType = tab.dataset.projectType || "event";
+    state.projectType = nextType in projectTypes ? nextType : "event";
+    updateTypeDependentBounds();
+    updateSlidesFromCount(state.slidesCount);
+    updateRendersFromCount(state.rendersCount);
+    recalc();
+  });
+});
+
+if (initialTab) {
+  setActiveTab(initialTab);
+  const initialType = initialTab.dataset.projectType || "event";
+  state.projectType = initialType in projectTypes ? initialType : "event";
+}
+
+updateTypeDependentBounds();
+updateSlidesFromCount(state.slidesCount);
+updateRendersFromCount(state.rendersCount);
+updateField("deadlineDays", state.deadlineDays);
+dom.keyvisual.checked = state.keyvisual;
+
+bindInput("slidesCount", updateSlidesFromCount);
+bindInput("slidesPrice", updateSlidesFromPrice);
+bindInput("rendersCount", updateRendersFromCount);
+bindInput("rendersPrice", updateRendersFromPrice);
+bindInput("deadlineDays", (value) => updateField("deadlineDays", value));
 recalc();
