@@ -10,6 +10,15 @@ const formatPercent = (value) => {
   return `+${formatted}%`;
 };
 
+const pluralize = (n, one, few, many) => {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return many;
+  if (last > 1 && last < 5) return few;
+  if (last === 1) return one;
+  return many;
+};
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const roundTo = (value, precision = 2) => {
@@ -88,7 +97,7 @@ const fields = {
   slidesPrice: { min: 1500, max: 2500, step: 1, normalize: normalizeMoney },
   rendersCount: { min: 0, max: 50, step: 1, normalize: normalizeCount },
   rendersPrice: { min: 750, max: 1500, step: 1, normalize: normalizeMoney },
-  deadlineDays: { min: 3, max: 30, step: 1, normalize: normalizeCount },
+  deadlineDays: { min: 0, max: 30, step: 1, normalize: normalizeCount, clampMin: MIN_DEADLINE_DAYS },
 };
 
 const state = {
@@ -114,6 +123,7 @@ const dom = {
   deadlineDaysRange: document.getElementById("deadlineDaysRange"),
   keyvisual: document.getElementById("keyvisual"),
   keyvisualPrice: document.getElementById("keyvisualPrice"),
+  deadlineUnit: document.getElementById("deadlineUnit"),
   deadlinePercent: document.getElementById("deadlinePercent"),
   summarySlides: document.getElementById("summarySlides"),
   summaryRenders: document.getElementById("summaryRenders"),
@@ -151,7 +161,8 @@ const setInputBounds = (key, { min, max, step }) => {
 const updateField = (key, value) => {
   const config = fields[key];
   const normalized = config.normalize ? config.normalize(value) : value;
-  const clamped = clamp(normalized, config.min, config.max);
+  const effectiveMin = config.clampMin != null ? config.clampMin : config.min;
+  const clamped = clamp(normalized, effectiveMin, config.max);
   state[key] = clamped;
   dom[key].value = clamped;
   updateInputSize(dom[key]);
@@ -216,6 +227,13 @@ const recalc = () => {
   const total = roundTo(baseCost + rushAddon, 2);
 
   dom.deadlinePercent.textContent = formatPercent(rushCoef * 100);
+  dom.deadlineUnit.textContent = pluralize(state.deadlineDays, "день", "дня", "дней");
+
+  const deadlineGroup = dom.deadlineDays.closest(".option-inputs");
+  if (deadlineGroup) {
+    deadlineGroup.classList.toggle("deadline-min", state.deadlineDays <= MIN_DEADLINE_DAYS);
+  }
+
   dom.summarySlides.textContent = formatCurrency(roundToRubles(slidesCost));
   dom.summaryRenders.textContent = formatCurrency(roundToRubles(rendersCost));
   dom.summaryUrgency.textContent = formatCurrency(roundToRubles(rushAddon));

@@ -82,13 +82,19 @@
               <div class="input-group" data-node-id="131:6716">
                 <div class="input-field">
                   <label class="input-inner" for="deadlineDays">
-                    <input class="input-number" id="deadlineDays" type="number" min="3" max="30" step="1" value="14" />
-                    <span class="input-unit">дней</span>
+                    <input class="input-number" id="deadlineDays" type="number" min="0" max="30" step="1" value="14" />
+                    <span class="input-unit" id="deadlineUnit">дней</span>
                     <span class="input-suffix" id="deadlinePercent">+00,00%</span>
+                    <span class="deadline-icon" id="deadlineIcon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M19.7398 15.4521C15.9786 15.706 15.3303 18.2449 14.9101 22L13.2012 21.9721L13.4728 18.773L12.0329 18.5445L11.646 21.9467L10.1471 21.9238L10.347 19.225L8.89679 18.9965L8.54834 21.8984L6.66772 21.8781C7.02642 17.4198 6.69078 15.1449 3.41636 14.0075C1.87907 8.9296 4.47965 1.03354 13.2114 2.09735C21.9432 3.16116 22.0175 10.8947 19.7398 15.4521ZM8.87117 9.05655C5.59418 8.65794 4.83835 13.553 8.31774 13.977C11.4871 14.3654 12.1277 9.45262 8.87117 9.05655ZM15.5097 10.8795C13.2217 10.6002 12.6913 14.0252 15.1202 14.3223C17.3467 14.5914 17.7849 11.1562 15.5097 10.8795Z" fill="currentColor"/>
+                      </svg>
+                    </span>
                   </label>
                 </div>
-                <input class="range" id="deadlineDaysRange" type="range" min="3" max="30" step="1" value="14" aria-label="Срок в днях" />
+                <input class="range" id="deadlineDaysRange" type="range" min="0" max="30" step="1" value="14" aria-label="Срок в днях" />
               </div>
+              <div class="deadline-warning" id="deadlineWarning">Это минимально возможный срок</div>
             </div>
           </div>
 

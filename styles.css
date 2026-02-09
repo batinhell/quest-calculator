@@ -69,7 +69,7 @@ body {
   line-height: 24px;
   cursor: pointer;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   gap: 12px;
   box-sizing: border-box;
@@ -80,7 +80,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 0 12px;
+  padding: 0;
   line-height: 1.25;
 }
 
@@ -143,7 +143,7 @@ body {
   padding: 64px 48px;
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 40px;
 }
 
 .intro {
@@ -223,9 +223,9 @@ body {
 
 .input-inner {
   height: 100%;
-  padding: 0 15px 22px;
+  padding: 0 15px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 4px;
   font-family: "Fira Mono", monospace;
   font-size: 16px;
@@ -269,7 +269,8 @@ body {
 }
 
 .range {
-  width: 100%;
+  width: calc(100% + 4px);
+  margin-left: -2px;
   height: 8px;
   margin-top: -8px;
   background: transparent;
@@ -318,6 +319,36 @@ body {
 
 .range:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--black);
+}
+
+.deadline-icon {
+  display: none;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+}
+
+.deadline-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.deadline-warning {
+  display: none;
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 125%;
+}
+
+.deadline-min .deadline-icon {
+  display: inline-flex;
+}
+
+.deadline-min .deadline-warning {
+  display: block;
 }
 
 .checkbox {
@@ -379,10 +410,12 @@ body {
 
 .checkbox input:checked:hover + .checkbox-box {
   background: var(--black-hover);
+  border-color: var(--black-hover);
 }
 
 .checkbox input:checked:active + .checkbox-box {
   background: var(--black-active);
+  border-color: var(--black-active);
 }
 
 .checkbox input:focus-visible + .checkbox-box {
@@ -510,7 +543,7 @@ body {
 .btn-text {
   display: inline-flex;
   align-items: center;
-  padding: 10px 0 12px;
+  padding: 0;
 }
 
 @media (max-width: 640px) {
