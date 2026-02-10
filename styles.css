@@ -319,15 +319,25 @@ body {
   border: none;
 }
 
+.range:hover::-webkit-slider-thumb {
+  background: var(--black-hover);
+}
+
+.range:hover::-moz-range-thumb {
+  background: var(--black-hover);
+}
+
 .range:focus-visible {
   outline: none;
 }
 
 .range:focus-visible::-webkit-slider-thumb {
+  background: var(--black-active);
   box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--black);
 }
 
 .range:focus-visible::-moz-range-thumb {
+  background: var(--black-active);
   box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--black);
 }
 
