@@ -216,9 +216,19 @@ body {
   background: var(--white);
 }
 
+.input-field:hover {
+  box-shadow:
+    inset 0 2px 0 0 var(--black),
+    inset 2px 0 0 0 var(--black),
+    inset -2px 0 0 0 var(--black);
+}
+
 .input-field:focus-within {
-  outline: var(--focus-outline);
-  outline-offset: var(--focus-offset);
+  outline: none;
+  box-shadow:
+    inset 0 3px 0 0 var(--black),
+    inset 3px 0 0 0 var(--black),
+    inset -3px 0 0 0 var(--black);
 }
 
 .input-inner {
